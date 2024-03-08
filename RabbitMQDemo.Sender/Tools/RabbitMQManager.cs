@@ -1,10 +1,10 @@
 ﻿using Newtonsoft.Json;
 using RabbitMQ.Client;
 using RabbitMQDemo.Core.Abstracts;
-using RabbitMQDemo.Core.Models;
+using RabbitMQDemo.Sender.Models;
 using System.Text;
 
-namespace RabbitMQDemo.Core.Tools;
+namespace RabbitMQDemo.Sender.Tools;
 
 public class RabbitMQManager : IDisposable
 {

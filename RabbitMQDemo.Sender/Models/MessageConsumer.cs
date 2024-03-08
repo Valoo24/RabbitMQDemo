@@ -1,10 +1,11 @@
 ﻿using Newtonsoft.Json;
 using RabbitMQ.Client;
+using RabbitMQDemo.Core.Repositories;
 using RabbitMQDemo.Core.Abstracts;
-using RabbitMQDemo.Core.Tools;
+using RabbitMQDemo.Sender.Tools;
 using System.Text;
 
-namespace RabbitMQDemo.Core.Models;
+namespace RabbitMQDemo.Sender.Models;
 
 public class MessageConsumer : DefaultBasicConsumer
 {
@@ -31,6 +32,6 @@ public class MessageConsumer : DefaultBasicConsumer
 
     private void Consume(IMessage message)
     {
-        //Do Nothing
+        MessageContext.messages.Add(message);
     }
 }

@@ -1,6 +1,6 @@
 ﻿using RabbitMQDemo.Core.Abstracts;
 
-namespace RabbitMQDemo.Core.Models;
+namespace RabbitMQDemo.Sender.Models;
 
 public class Message : IMessage
 {
