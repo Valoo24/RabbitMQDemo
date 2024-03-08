@@ -1,6 +1,7 @@
 ﻿using Newtonsoft.Json;
 using RabbitMQ.Client;
 using RabbitMQDemo.Core.Abstracts;
+using RabbitMQDemo.Core.Models;
 using System.Text;
 
 namespace RabbitMQDemo.Core.Tools;
@@ -40,6 +41,23 @@ public class RabbitMQManager : IDisposable
         {
             throw;
         }
+    }
+
+    public void ListenMessage()
+    {
+        channel.QueueDeclare(
+            queue:"demoqueue", durable:true, exclusive:false, autoDelete:false, arguments:null);
+
+        channel.BasicQos(prefetchSize: 0,prefetchCount:1,global:false);
+
+        MessageConsumer consumer = new(this);
+
+        channel.BasicConsume(queue: "demoqueue", false, consumer: consumer);
+    }
+
+    public void SendAck(ulong deliveryTag)
+    {
+        channel.BasicAck(deliveryTag:deliveryTag, multiple:false);
     }
 
     public void Dispose()
