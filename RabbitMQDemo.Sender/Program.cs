@@ -1,2 +1,2 @@
-﻿// See https://aka.ms/new-console-template for more information
-Console.WriteLine("Hello, World!");
+﻿Console.WriteLine("Welcome to the RabbitMQ Demo by Benjamin Malemprée.");
+Console.WriteLine("This window shows the sender client.");
