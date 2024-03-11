@@ -8,9 +8,10 @@ using System.Text;
 
 namespace RabbitMQDemo.Sender.Tools;
 
-public class RabbitMQManager : IDisposable
+public class RabbitMQManager : IRabbitMQManager<Message>
 {
     private readonly IModel channel;
+    private EventingBasicConsumer consumer;
     public RabbitMQManager()
     {
         var connectionFactory = new ConnectionFactory()
@@ -24,10 +25,26 @@ public class RabbitMQManager : IDisposable
         channel.ExchangeDeclare(exchange: "demoexchange", type: ExchangeType.Direct);
         channel.QueueDeclare(queue: "demoqueue", durable: true, exclusive: false, autoDelete: false, arguments: null);
         channel.QueueBind(queue: "demoqueue", exchange: "demoexchange", routingKey: "");
-        ReadMessage();
+        InitializeReader();
     }
 
-    public void SendMessage(IMessage message)
+    public void InitializeReader()
+    {
+        consumer = new EventingBasicConsumer(channel);
+        consumer.Received += (chan, ea) =>
+        {
+            var body = ea.Body;
+            var jsonResult = Encoding.UTF8.GetString(body.ToArray());
+            if (jsonResult is not null)
+            {
+                IMessage message = JsonConvert.DeserializeObject<Message>(jsonResult);
+                MessageContext.messages.Add(message);
+            }
+        };
+        channel.BasicConsume(queue: "demoqueue", autoAck: true, consumer: consumer);
+    }
+
+    public void SendMessage(Message message)
     {
         var jsonMessage = JsonConvert.SerializeObject(message);
         var messageproperties = channel.CreateBasicProperties();
@@ -46,20 +63,6 @@ public class RabbitMQManager : IDisposable
 
     public void ReadMessage()
     {
-        IMessage message;
-
-        var consumer = new EventingBasicConsumer(channel);
-        consumer.Received += (chan, ea) =>
-        {
-            var body = ea.Body;
-            var content = Encoding.UTF8.GetString(body.ToArray());
-            if (content is not null)
-            {
-                message = JsonConvert.DeserializeObject<Message>(content);
-                MessageContext.messages.Add(message);
-            }
-        };
-
         try
         {
             channel.BasicConsume(queue: "demoqueue", autoAck: true, consumer: consumer);

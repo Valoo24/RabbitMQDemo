@@ -1,5 +1,4 @@
-﻿using RabbitMQDemo.Core.Abstracts;
-using RabbitMQDemo.Sender.Models;
+﻿using RabbitMQDemo.Sender.Models;
 using RabbitMQDemo.Sender.Tools;
 using RabbitMQDemo.Core.Repositories;
 
@@ -52,7 +51,7 @@ void readMessages()
 
 void sendMessage()
 {
-    IMessage message = new Message();
+    Message message = new Message();
 
     Console.Clear();
     Console.WriteLine("Please type the message to send then press \'Enter\'");
@@ -75,9 +74,8 @@ void sendMessage()
 
 bool quitPrompt()
 {
-    Console.WriteLine("Press \'q\' to quit, or any key to reload the page.");
-    var result = Console.ReadKey(true);
-    if (result.Key == ConsoleKey.Q) return true;
+    Console.WriteLine("Press \'q\' to quit, or any key to reload.");
+    if (Console.ReadKey(true).Key == ConsoleKey.Q) return true;
     else
     {
         return false;
