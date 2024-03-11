@@ -1,6 +1,8 @@
 ﻿using Newtonsoft.Json;
 using RabbitMQ.Client;
+using RabbitMQ.Client.Events;
 using RabbitMQDemo.Core.Abstracts;
+using RabbitMQDemo.Core.Repositories;
 using RabbitMQDemo.Sender.Models;
 using System.Text;
 
@@ -18,17 +20,16 @@ public class RabbitMQManager : IDisposable
         var connection = connectionFactory.CreateConnection();
 
         channel = connection.CreateModel();
-    }
-
-    public void SendMessage(IMessage message)
-    {
 
         channel.ExchangeDeclare(exchange: "demoexchange", type: ExchangeType.Direct);
         channel.QueueDeclare(queue: "demoqueue", durable: true, exclusive: false, autoDelete: false, arguments: null);
         channel.QueueBind(queue: "demoqueue", exchange: "demoexchange", routingKey: "");
+        ReadMessage();
+    }
 
+    public void SendMessage(IMessage message)
+    {
         var jsonMessage = JsonConvert.SerializeObject(message);
-
         var messageproperties = channel.CreateBasicProperties();
         messageproperties.ContentType = "application/json";
 
@@ -43,21 +44,30 @@ public class RabbitMQManager : IDisposable
         }
     }
 
-    public void ListenMessage()
+    public void ReadMessage()
     {
-        channel.QueueDeclare(
-            queue:"demoqueue", durable:true, exclusive:false, autoDelete:false, arguments:null);
+        IMessage message;
 
-        channel.BasicQos(prefetchSize: 0,prefetchCount:1,global:false);
+        var consumer = new EventingBasicConsumer(channel);
+        consumer.Received += (chan, ea) =>
+        {
+            var body = ea.Body;
+            var content = Encoding.UTF8.GetString(body.ToArray());
+            if (content is not null)
+            {
+                message = JsonConvert.DeserializeObject<Message>(content);
+                MessageContext.messages.Add(message);
+            }
+        };
 
-        MessageConsumer consumer = new(this);
-
-        channel.BasicConsume(queue: "demoqueue", false, consumer: consumer);
-    }
-
-    public void SendAck(ulong deliveryTag)
-    {
-        channel.BasicAck(deliveryTag:deliveryTag, multiple:false);
+        try
+        {
+            channel.BasicConsume(queue: "demoqueue", autoAck: true, consumer: consumer);
+        }
+        catch
+        {
+            throw;
+        }
     }
 
     public void Dispose()

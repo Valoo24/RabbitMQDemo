@@ -1,17 +1,59 @@
 ﻿using RabbitMQDemo.Core.Abstracts;
 using RabbitMQDemo.Sender.Models;
 using RabbitMQDemo.Sender.Tools;
+using RabbitMQDemo.Core.Repositories;
 
-bool hasQuit = false;
-IMessage message = new Message();
 RabbitMQManager messageManager = new();
-
-Console.WriteLine("Welcome to the RabbitMQ Demo by Benjamin Malemprée.");
-Console.WriteLine("This window shows the sender client.");
-Console.ReadKey();
 
 do
 {
+    Console.Clear();
+    Console.WriteLine("Options (type the number corresponding of what you want to do) :");
+    Console.WriteLine("1 - Send a message\t2 - Read all messages in queue");
+
+    var keyResult = Console.ReadKey(true);
+    switch (keyResult.Key)
+    {
+        case ConsoleKey.NumPad1:
+            sendMessage();
+            break;
+        case ConsoleKey.NumPad2:
+            readMessages();
+            break;
+        default:
+            Console.WriteLine("The key pressed, is not recognised.");
+            break;
+    }
+}
+while (!quitPrompt());
+
+Console.WriteLine("Goodbye !");
+Console.ReadLine();
+
+void readMessages()
+{
+    Console.Clear();
+    try
+    {
+        messageManager.ReadMessage();
+
+        Console.WriteLine("Messages :");
+        foreach (var message in MessageContext.messages)
+        {
+            if(message is not null)
+            Console.WriteLine($"Message : {message.Content}");
+        }
+    }
+    catch(Exception ex)
+    {
+        Console.WriteLine(ex.Message);
+    }
+}
+
+void sendMessage()
+{
+    IMessage message = new Message();
+
     Console.Clear();
     Console.WriteLine("Please type the message to send then press \'Enter\'");
     string result = Console.ReadLine();
@@ -27,16 +69,17 @@ do
     }
     catch (Exception ex)
     {
-        hasQuit = true;
         Console.WriteLine(ex.Message);
     }
+}
 
-    Console.WriteLine("Please type \'r\' to send another message.");
-    var keyResult = Console.ReadKey();
-    if(keyResult.Key != ConsoleKey.R)
-        hasQuit = true;
-
-} while (!hasQuit);
-
-Console.WriteLine("Goodbye !");
-Console.ReadLine();
+bool quitPrompt()
+{
+    Console.WriteLine("Press \'q\' to quit, or any key to reload the page.");
+    var result = Console.ReadKey(true);
+    if (result.Key == ConsoleKey.Q) return true;
+    else
+    {
+        return false;
+    }
+}
