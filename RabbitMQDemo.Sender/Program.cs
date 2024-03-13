@@ -2,7 +2,7 @@
 using RabbitMQDemo.Sender.Tools;
 using RabbitMQDemo.Core.Repositories;
 
-RabbitMQManager messageManager = new();
+RabbitMQMessageManager messageManager = new("demoexchange", "demoqueue");
 
 do
 {
